@@ -1,56 +1,26 @@
 import requests
 import numpy as np
-import argparse
-import base64
-from PIL import Image
-import io
-import json
-import time
-
-def main():
-    parser = argparse.ArgumentParser(description='Test V-GPS API')
-    parser.add_argument('--url', type=str, default='http://localhost:8000/get_values', help='API endpoint URL')
-    parser.add_argument('--image', type=str, required=True, help='Path to the image file')
-    parser.add_argument('--instruction', type=str, default='put eggplant into yellow basket', help='Task instruction')
-    args = parser.parse_args()
-    
-    # Sample actions
-    actions = [
-        [-3.72366211e-02, 7.17199291e-03, -1.45544186e-01, 3.92003991e-02, 7.66136944e-02, 4.05342411e-03, 8.99420261e-01],
-        [-2.00744509e-02, 6.26228866e-03, -7.30025396e-02, 5.30035943e-02, 3.47160921e-02, 5.64907417e-02, 9.99990000e-01]
-    ]
-    
-    # Load and prepare the image
-    try:
-        img = Image.open(args.image)
-        img_byte_arr = io.BytesIO()
-        img.save(img_byte_arr, format='JPEG')
-        
-        # Prepare the request
-        files = {
-            'image': ('image.jpg', img_byte_arr.getvalue(), 'image/jpg'),
-        }
-        
-        data = {
-            'instruction': args.instruction,
-            'actions': str(actions)
-        }
-        
-        # Send the request
-        start_time = time.time()
-        response = requests.post(args.url, files=files, data=data)
-        request_time = time.time() - start_time
-        
-        if response.status_code == 200:
-            result = response.json()
-            print(f"Request successful. Time: {request_time:.4f}s, API processing time: {result['processing_time']:.4f}s")
-            print(f"Values: {result['values']}")
-        else:
-            print(f"Request failed with status code {response.status_code}")
-            print(response.text)
-    
-    except Exception as e:
-        print(f"Error: {str(e)}")
-
-if __name__ == "__main__":
-    main()
+import json_numpy as json
+import pickle
+url = "http://127.0.0.1:3100/process"
+instruction = "move the yellow knife to the right of the pan"
+image_path = "scripts/79000.jpg"
+action = np.array([
+        [-0.0006071124225854874, -0.001102231559343636, -0.002975916489958763, -0.0037233866751194, 0.009374408982694149, 0.00042649864917621017, 1.003713607788086], #action0
+        [0.0007309613865800202, -0.00033146265195682645, 8.855393389239907e-05, 0.0023672617971897125, -0.00297730159945786, 0.0071182833053171635, 1.0025840997695923],
+        [0.0003844001912511885, 0.0010981999803334475, -0.006680284161120653, -0.008547065779566765, 0.021539149805903435, 0.014096851460635662, 1.0460903644561768],
+        [-0.0012932196259498596, -7.85675656516105e-05, -0.007247961591929197, -0.010998447425663471, 0.023759912699460983, 0.0015791847836226225, 1.013885736465454],
+        [-0.0002225322969025001, 0.00012939439329784364, -0.00023808938567526639, -0.004563219379633665, 0.005036361515522003, 0.0021004355512559414, 0.9518507122993469],
+        [-0.001818387652747333, -0.0013037925818935037, -0.0080921845510602, -0.008700641803443432, 0.02245231531560421, -0.0024688607081770897, 1.0093427896499634],
+        [-0.003059342736378312, 7.718679262325168e-05, -0.009317572228610516, -0.01436073612421751, 0.02727797068655491, 0.00498265540227294, 1.030832052230835],
+        [-0.0009580199257470667, -0.002090591937303543, -0.0009161726338788867, -0.005044611636549234, 0.006233627907931805, -0.0006715729832649231, 1.0123248100280762],
+    ])
+payload = {
+    "instruction": instruction,
+    "image_path": image_path,
+    "action": action
+}
+response = requests.post(url, data=json.dumps(payload))
+response = json.loads(response.text)
+rewards = response["rewards"]
+print(rewards)
