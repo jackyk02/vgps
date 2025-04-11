@@ -1,0 +1,8 @@
+[submodule "octo"]
+	path = octo
+	url = https://github.com/nakamotoo/octo.git
+	branch = main
+[submodule "SimplerEnv"]
+	path = SimplerEnv
+	url = https://github.com/nakamotoo/SimplerEnv.git
+	branch = main
